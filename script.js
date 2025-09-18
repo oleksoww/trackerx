@@ -34,14 +34,12 @@ videoUpload.addEventListener("change", (ev) => {
 videoPlayer.addEventListener("loadedmetadata", () => {
   overlay.width = videoPlayer.videoWidth;
   overlay.height = videoPlayer.videoHeight;
-  drawOverlay();
   zoomBox.classList.remove("hidden");
 });
 
 // --- reset ramki ---
 resetFrame.addEventListener("click", () => {
   rect = {x:100, y:100, w:200, h:80};
-  drawOverlay();
 });
 
 // --- toggle ramki ---
@@ -52,7 +50,6 @@ toggleFrameBtn.addEventListener("click", () => {
     ctx.clearRect(0,0,overlay.width,overlay.height);
     zoomBox.classList.add("hidden");
   } else {
-    drawOverlay();
     zoomBox.classList.remove("hidden");
   }
 });
@@ -67,7 +64,12 @@ function drawOverlay() {
 
   // uchwyt do resize
   ctx.fillStyle = "rgba(0,200,255,0.95)";
-  ctx.fillRect(rect.x+rect.w-resizeHandleSize/2, rect.y+rect.h-resizeHandleSize/2, resizeHandleSize, resizeHandleSize);
+  ctx.fillRect(
+    rect.x+rect.w-resizeHandleSize/2,
+    rect.y+rect.h-resizeHandleSize/2,
+    resizeHandleSize,
+    resizeHandleSize
+  );
 }
 
 // --- obsługa myszki ---
@@ -89,11 +91,9 @@ overlay.addEventListener("mousemove", (e) => {
   if (dragging) {
     rect.x = mx - dragOffset.x;
     rect.y = my - dragOffset.y;
-    drawOverlay();
   } else if (resizing) {
     rect.w = Math.max(30, mx - rect.x);
     rect.h = Math.max(20, my - rect.y);
-    drawOverlay();
   }
 });
 
@@ -109,18 +109,19 @@ function insideResizeHandle(mx,my){
           my < rect.y+rect.h+resizeHandleSize);
 }
 
-// --- aktualizacja zooma ---
-function updateZoom() {
-  if (!frameVisible) {
-    requestAnimationFrame(updateZoom);
-    return;
-  }
-  if (!videoPlayer.paused && !videoPlayer.ended) {
+// --- render loop ---
+function renderLoop(){
+  // rysuj ramkę
+  drawOverlay();
+
+  // rysuj zoom tylko jeśli film gra
+  if (frameVisible && !videoPlayer.paused && !videoPlayer.ended) {
     renderZoom();
   }
-  requestAnimationFrame(updateZoom);
+  requestAnimationFrame(renderLoop);
 }
 
+// --- aktualizacja zooma ---
 function renderZoom(){
   if (!rect.w || !rect.h) return;
   const tempCanvas = document.createElement("canvas");
@@ -146,4 +147,8 @@ function renderZoom(){
 
   // oblicz metry
   const focalApprox = overlay.height*0.8;
-  const estimatedDistance = (PLATE_REAL_
+  const estimatedDistance = (PLATE_REAL_HEIGHT_M * focalApprox) / rect.h;
+  distanceText.textContent = estimatedDistance.toFixed(1)+" m";
+}
+
+renderLoop();

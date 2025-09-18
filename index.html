@@ -7,18 +7,26 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
+  <header>
     <h1>TrackerX 🚀</h1>
-    <p>Wrzuć film i włącz interfejs, aby zobaczyć analizę wideo.</p>
+    <p>Prototyp systemu analizy wideo dla kierowców</p>
+  </header>
 
-    <input type="file" id="videoUpload" accept="video/*">
-    <button id="startBtn">Włącz interfejs</button>
-    
+  <main class="container">
+    <div class="controls">
+      <input type="file" id="videoUpload" accept="video/*">
+      <button id="startBtn">Włącz interfejs</button>
+    </div>
+
     <div class="video-wrapper">
       <video id="videoPlayer" controls></video>
       <canvas id="overlay"></canvas>
     </div>
-  </div>
+  </main>
+
+  <footer>
+    <p>© 2025 TrackerX</p>
+  </footer>
 
   <script src="script.js"></script>
 </body>

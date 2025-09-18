@@ -9,12 +9,14 @@ const zctx = zoomCanvas.getContext("2d");
 const distanceText = document.getElementById("distanceText");
 
 const resetFrame = document.getElementById("resetFrame");
+const toggleFrameBtn = document.getElementById("toggleFrame");
 
 let rect = {x:100, y:100, w:200, h:80};
 let dragging = false;
 let resizing = false;
 let dragOffset = {x:0,y:0};
 let resizeHandleSize = 12;
+let frameVisible = true;
 
 // Realna wysokość tablicy (dla metryki)
 const PLATE_REAL_HEIGHT_M = 0.14;
@@ -42,9 +44,23 @@ resetFrame.addEventListener("click", () => {
   drawOverlay();
 });
 
+// --- toggle ramki ---
+toggleFrameBtn.addEventListener("click", () => {
+  frameVisible = !frameVisible;
+  toggleFrameBtn.textContent = frameVisible ? "Ukryj ramkę" : "Pokaż ramkę";
+  if (!frameVisible) {
+    ctx.clearRect(0,0,overlay.width,overlay.height);
+    zoomBox.classList.add("hidden");
+  } else {
+    drawOverlay();
+    zoomBox.classList.remove("hidden");
+  }
+});
+
 // --- rysowanie ramki ---
 function drawOverlay() {
   ctx.clearRect(0,0,overlay.width,overlay.height);
+  if (!frameVisible) return;
   ctx.strokeStyle = "rgba(0,200,255,0.95)";
   ctx.lineWidth = 2;
   ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
@@ -56,6 +72,7 @@ function drawOverlay() {
 
 // --- obsługa myszki ---
 overlay.addEventListener("mousedown", (e) => {
+  if (!frameVisible) return;
   const mx = e.offsetX, my = e.offsetY;
   if (insideResizeHandle(mx,my)) {
     resizing = true;
@@ -67,6 +84,7 @@ overlay.addEventListener("mousedown", (e) => {
 });
 
 overlay.addEventListener("mousemove", (e) => {
+  if (!frameVisible) return;
   const mx = e.offsetX, my = e.offsetY;
   if (dragging) {
     rect.x = mx - dragOffset.x;
@@ -93,6 +111,10 @@ function insideResizeHandle(mx,my){
 
 // --- aktualizacja zooma ---
 function updateZoom() {
+  if (!frameVisible) {
+    requestAnimationFrame(updateZoom);
+    return;
+  }
   if (!videoPlayer.paused && !videoPlayer.ended) {
     renderZoom();
   }
@@ -106,4 +128,22 @@ function renderZoom(){
   tempCanvas.height = overlay.height;
   const tctx = tempCanvas.getContext("2d");
   tctx.drawImage(videoPlayer, 0,0,overlay.width,overlay.height);
-  const crop = tctx.getImage
+  const crop = tctx.getImageData(rect.x, rect.y, rect.w, rect.h);
+
+  // rysuj w zoomCanvas
+  zoomCanvas.width = 280;
+  zoomCanvas.height = 180;
+  zctx.clearRect(0,0,zoomCanvas.width,zoomCanvas.height);
+  const cropCanvas = document.createElement("canvas");
+  cropCanvas.width = rect.w;
+  cropCanvas.height = rect.h;
+  cropCanvas.getContext("2d").putImageData(crop,0,0);
+
+  const scale = Math.min(zoomCanvas.width/rect.w, zoomCanvas.height/rect.h);
+  const dw = rect.w*scale, dh = rect.h*scale;
+  zctx.drawImage(cropCanvas, 0,0, rect.w, rect.h,
+    (zoomCanvas.width-dw)/2,(zoomCanvas.height-dh)/2,dw,dh);
+
+  // oblicz metry
+  const focalApprox = overlay.height*0.8;
+  const estimatedDistance = (PLATE_REAL_

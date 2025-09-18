@@ -1,32 +1,57 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TrackerX 🚗</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TrackerX — Auto-zoom na tablice</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- OpenCV.js (wasm) -->
+  <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
+  <!-- Tesseract.js for OCR -->
+  <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
 <body>
   <header>
     <h1>TrackerX 🚀</h1>
-    <p>Prototyp systemu analizy wideo dla kierowców</p>
+    <p>Wrzucaj film — system sam znajdzie tablicę, powiększy i spróbuje rozczytać.</p>
   </header>
 
   <main class="container">
     <div class="controls">
-      <input type="file" id="videoUpload" accept="video/*">
+      <input id="videoUpload" type="file" accept="video/*" />
       <button id="startBtn">Włącz interfejs</button>
+      <label class="switch">
+        <input id="pauseOnDetect" type="checkbox" />
+        <span> Pauzuj przy wykryciu</span>
+      </label>
+      <div class="status" id="status">Ładowanie OpenCV…</div>
     </div>
 
-    <div class="video-wrapper">
-      <video id="videoPlayer" controls></video>
-      <canvas id="overlay"></canvas>
+    <div class="video-area">
+      <div class="video-wrapper">
+        <video id="videoPlayer" controls playsinline></video>
+        <canvas id="overlay"></canvas>
+      </div>
+
+      <!-- mini zoom window -->
+      <div id="zoomBox" class="zoom-box hidden">
+        <div class="zoom-header">
+          <span id="plateText">—</span>
+          <button id="closeZoom">✕</button>
+        </div>
+        <canvas id="zoomCanvas"></canvas>
+        <div class="zoom-footer">
+          <span id="distanceText">— m</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tips">
+      <strong>Wskazówki:</strong> najlepiej działające przy wyraźnych tablicach i dobranym rozmiarze wideo. Jeśli OCR nieczytelne, spróbuj innego nagrania.
     </div>
   </main>
 
-  <footer>
-    <p>© 2025 TrackerX</p>
-  </footer>
+  <footer>© 2025 TrackerX</footer>
 
   <script src="script.js"></script>
 </body>

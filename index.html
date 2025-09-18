@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrackerX 🚗</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>TrackerX 🚀</h1>
+    <p>Wrzuć film i włącz interfejs, aby zobaczyć analizę wideo.</p>
+
+    <input type="file" id="videoUpload" accept="video/*">
+    <button id="startBtn">Włącz interfejs</button>
+    
+    <div class="video-wrapper">
+      <video id="videoPlayer" controls></video>
+      <canvas id="overlay"></canvas>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

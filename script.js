@@ -5,6 +5,8 @@ const ctx = overlay.getContext("2d");
 const startBtn = document.getElementById("startBtn");
 
 let interfaceEnabled = false;
+let distance = 50; // początkowy dystans w metrach
+let decreasing = true; // kierunek zmiany dystansu
 
 // Ładowanie filmu
 videoUpload.addEventListener("change", function () {
@@ -15,7 +17,7 @@ videoUpload.addEventListener("change", function () {
   }
 });
 
-// Włączenie interfejsu
+// Włączanie / wyłączanie interfejsu
 startBtn.addEventListener("click", () => {
   interfaceEnabled = !interfaceEnabled;
   startBtn.textContent = interfaceEnabled ? "Wyłącz interfejs" : "Włącz interfejs";
@@ -33,20 +35,50 @@ videoPlayer.addEventListener("loadedmetadata", () => {
   overlay.height = videoPlayer.videoHeight;
 });
 
-// Mock danych
+// Funkcja do symulacji zmiany odległości
+function updateDistance() {
+  if (decreasing) {
+    distance -= 0.1;
+    if (distance <= 10) decreasing = false;
+  } else {
+    distance += 0.1;
+    if (distance >= 50) decreasing = true;
+  }
+}
+
+// Rysowanie interfejsu
 function drawOverlay() {
   if (!interfaceEnabled) return;
 
   ctx.clearRect(0, 0, overlay.width, overlay.height);
 
-  // 🚗 symulacja danych
-  ctx.fillStyle = "rgba(0, 200, 255, 0.8)";
-  ctx.font = "28px Arial";
-  ctx.fillText("Rejestracja: WE8AC01", 60, 60);
+  // 🔹 Symulacja samochodu przed nami
+  let carX = overlay.width / 2 - 100;
+  let carY = overlay.height / 2;
+  let carW = 200;
+  let carH = 100;
 
-  ctx.fillStyle = "rgba(0, 255, 120, 0.8)";
-  ctx.font = "42px Arial";
-  ctx.fillText("13 m", overlay.width / 2, overlay.height - 70);
+  // Ramka wokół auta
+  ctx.strokeStyle = "rgba(0, 200, 255, 0.9)";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(carX, carY, carW, carH);
+
+  // Zoom na tablicę rejestracyjną (pudełko u góry)
+  ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+  ctx.fillRect(overlay.width / 2 - 140, 40, 280, 70);
+  ctx.strokeStyle = "rgba(255,255,255,0.9)";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(overlay.width / 2 - 140, 40, 280, 70);
+
+  ctx.fillStyle = "white";
+  ctx.font = "32px monospace";
+  ctx.fillText("WE 8AC01", overlay.width / 2 - 90, 85);
+
+  // Aktualizowany dystans
+  updateDistance();
+  ctx.fillStyle = "rgba(0, 255, 120, 0.9)";
+  ctx.font = "46px Arial";
+  ctx.fillText(`${distance.toFixed(1)} m`, overlay.width / 2 - 70, carY + carH + 60);
 
   requestAnimationFrame(drawOverlay);
 }
